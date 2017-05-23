@@ -31,7 +31,6 @@ public class TigerAction implements IActionSupport {
 			if (list == null)
 				list.add(ruleId.ruleId);
 		}
-
 		GeneratedMessage sc = tigerService.draw(role, list);
 		if (sc != null) {
 			session.write(sc);
