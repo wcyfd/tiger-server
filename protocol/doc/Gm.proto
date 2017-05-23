@@ -1,0 +1,7 @@
+package com.randioo.tiger_server.protocol;
+
+message GmCmdRequest{
+	optional string cmd = 1;
+}
+message GmCmdResponse{
+}

@@ -1,0 +1,14 @@
+package com.randioo.tiger_server.protocol;
+import "Entity.proto";
+
+message TigerRequest{
+	optional int32 ruleId=1;
+	
+}
+message TigerResponse{
+	optional int32 errorCode=1[default = 1];
+	optional int32 result=2;
+	optional RandomData randomData=3;
+	optional int32 free=4;     
+}
+

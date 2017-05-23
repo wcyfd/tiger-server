@@ -1,0 +1,16 @@
+package com.randioo.tiger_server.protocol;
+
+import "Login.proto";
+import "Gm.proto";
+import "Tiger.proto";
+
+
+message SCMessage{
+	optional LoginCheckAccountResponse LoginCheckAccountResponse= 1;
+	optional LoginCreateRoleResponse LoginCreateRoleResponse= 2;
+	optional LoginGetRoleDataResponse LoginGetRoleDataResponse= 3;
+
+	optional GmCmdResponse GmCmdResponse= 4;
+	
+	optional TigerResponse tigerResponse= 5;
+} // 5
