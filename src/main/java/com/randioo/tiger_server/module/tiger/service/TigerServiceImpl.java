@@ -1,7 +1,9 @@
 package com.randioo.tiger_server.module.tiger.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,7 @@ public class TigerServiceImpl implements TigerService {
 	public GeneratedMessage draw(Role role, List<Integer> ruleIdList) {
 		int arr[][] = new int[3][5];
 
+		// 随机出老虎机的值
 		RandomData.Builder randomDataBuilder = RandomData.newBuilder();
 		for (int i = 0; i < arr.length; i++) {
 			RowData.Builder rowDataBuilder = RowData.newBuilder();
@@ -33,52 +36,48 @@ public class TigerServiceImpl implements TigerService {
 			}
 			randomDataBuilder.addRowData(rowDataBuilder);
 		}
+
 		// 积分
 		int result = 0;
 		int free = 0;
+
+		// 遍历所有规则
 		for (int ruleId : ruleIdList) {
 			List<LABARuleConfig> configs = LABARuleConfigCache.getLabaRuleConfig(ruleId);
 			// 计算连击数
-			int count = 1;
-			for (int i = 0; i < configs.size() - 1; i++) {
-				// 前一个
-				LABARuleConfig config = configs.get(i);
-				// 后一个
-				LABARuleConfig nextConfig = configs.get(i + 1);
+			int targetValue = 0;
+			int i = 0;
+			for (; i < configs.size(); i++) {
+				// 前一个位置
+				LABARuleConfig currentConfig = configs.get(i);
 
-				int value = arr[config.x][config.y];
-				int nextValue = arr[nextConfig.x][nextConfig.y];
-				// 判断百搭的位置
-				if (value == 10 && i == 0)
-					value = nextValue;
+				// 获得第一个位置的值
+				int currentValue = arr[currentConfig.x][currentConfig.y];
 
-				if (nextValue == 10 && i > 0)
-					nextValue = value;
-
-				// 判断第一个与和后面是否相等，并计算连击
-				if (i == 0 && value == nextValue) {
-					count++;
-					// 如果是百搭五连，另外计算
-					if (count == 5 && value == 10) {
-						value = 10;
-					}
-					// 如果是免费,得到免费次数
-					if (value == 0 && count > 1) {
-						free = count;
-					}
-				}
-				// 获取对应编号相关的奖励
-				Map<Integer, LABARuleAwardConfig> laba = LABARuleAwardConfigCache.getMap(value);
-				LABARuleAwardConfig point = laba.get(count);
-				// 计算积分
-				if (point != null) {
-					result += point.point;
+				// 目标值要先赋值，不管是什么值
+				if (targetValue == 0)
+					targetValue = currentValue;
+				else if (currentValue == 10) {
 					continue;
+				} else {
+					if (targetValue == 10) {
+						targetValue = currentValue;
+					} else if (targetValue == currentValue) {
+						continue;
+					} else {
+						break;
+					}
 				}
 			}
+
+			// point cal
+			// 一次都没有命中，则直接跳过
+			if (i == 1) {
+				continue;
+			}
+			result += LABARuleAwardConfigCache.getMap(targetValue).get(i + 1).point;
 		}
-		return SCMessage
-				.newBuilder()
+		return SCMessage.newBuilder()
 				.setTigerResponse(
 						TigerResponse.newBuilder().setRandomData(randomDataBuilder).setResult(result).setFree(free))
 				.build();
